@@ -101,7 +101,6 @@ public class Image {
         }
     }
 
-    // hello mother
     /**
      *  Highlights a seam in the image
      * @param seam given seam to hightlights
