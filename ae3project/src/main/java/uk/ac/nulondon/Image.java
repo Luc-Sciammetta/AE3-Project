@@ -125,13 +125,32 @@ public class Image {
      */
     public void removeSeam(List<Pixel> seam) { //this might work this might not idk there is no way to test it right now
         //TODO: remove the provided seam
-        for (Pixel pixel : seam){
-            pixel.left = pixel.right;
+        for (Pixel pixel : seam) {
+            row.right = row.legt;
+        }
+        for (int i = 0; i < seam.size(); i++) {
+            Pixel current = rows.get(i);
+            Pixel seamPixel = seam.get(i);
+            while (current != null) {
+                if (current == seamPixel) {
+                    if(current.left != null){
+                        current.left.right = current.right;
+                    }
+                    if(current.right != null){
+                        current.right.left = current.left;
+                    }
+                    break;
+                }
+                current = current.right;
+            }
         }
     }
 
     public void addSeam(List<Pixel> seam) {
         //TODO: Add the provided seam
+        for (int i = 0; i < seam.size(); i++){
+
+        }
 
     }
 
@@ -141,7 +160,14 @@ public class Image {
 //        for(int i = 0; i < getWidth(); i++){
 //            rows.
 //        }
-        return null;
+        int max = 0;
+        for(int i = 0; i < rows.size(); i++){
+          int temp  = valueGetter.apply(rows.get(i));
+          if(temp > max){
+              max = temp;
+          }
+        }
+        return max;
     }
 
     public List<Pixel> getGreenestSeam() {
