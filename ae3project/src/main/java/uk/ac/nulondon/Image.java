@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+
 public class Image {
     private final List<Pixel> rows;
 
@@ -54,11 +55,29 @@ public class Image {
         return height;
     }
 
+    /**
+     * Calculates the energy for the specific pixel
+     * @param above the above pixel
+     * @param current the current pixel
+     * @param below the below pixel
+     * @return the calculate energy double
+     */
     double energy(Pixel above, Pixel current, Pixel below) {
         //TODO: Calculate energy based on neighbours of the current pixel
-        return 0;
+
+        // find the horizontal energy
+      double HorizEnergy = (above.left.brightness() + (2 * (current.left.brightness())) + below.left.brightness()) -
+              (above.right.brightness() + (2 * (current.right.brightness())) + below.right.brightness());
+        // find the vertical energy
+      double VertEnergy = (above.left.brightness() + (2 * (above.brightness())) + above.right.brightness()) -
+              (below.left.brightness() + (2 * (below.brightness())) + below.right.brightness());
+        // find and return the energy
+      return Math.sqrt(Math.pow(2, HorizEnergy) + Math.pow(2, VertEnergy));
     }
 
+    /**
+     * calculates the energy property of each pixel
+     */
     public void calculateEnergy() {
         //TODO: calculate energy for all the pixels in the image
         int numRights = 0;
@@ -82,9 +101,22 @@ public class Image {
         }
     }
 
+    /**
+     *  Highlights a seam in the image
+     * @param seam given seam to hightlights
+     * @param color given color to highlight the seam
+     * @return the original seam
+     */
     public List<Pixel> higlightSeam(List<Pixel> seam, Color color) {
         //TODO: highlight the seam, return previous values
-        return null;
+        List<Pixel> originalSeam =  new ArrayList<>(); //deep copy here
+        for (int i = 0; i < getWidth(); i++){
+            originalSeam.add(seam.get(i));
+        }
+        for (int i = 0; i < seam.size(); i++){ // highlight the seam
+            seam.set(i, new Pixel(color));
+         }
+        return originalSeam; // return the original seam
     }
 
     /**
@@ -100,10 +132,15 @@ public class Image {
 
     public void addSeam(List<Pixel> seam) {
         //TODO: Add the provided seam
+
     }
 
     private List<Pixel> getSeamMaximizing(Function<Pixel, Double> valueGetter) {
         //TODO: find the seam which maximizes total value extracted from the given pixel
+//        List<Pixel> seam = new ArrayList<>();
+//        for(int i = 0; i < getWidth(); i++){
+//            rows.
+//        }
         return null;
     }
 
