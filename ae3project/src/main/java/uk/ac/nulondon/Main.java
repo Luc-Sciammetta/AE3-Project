@@ -53,7 +53,7 @@ public class Main {
     private void run() throws IOException {
         //Scanner is closeable, so we put it into try-with-resources
         try (Scanner scan = new Scanner(System.in)) {
-            // src/main/resources/beach.png
+            // ae3project/src/main/resources/beach.png
             System.out.println("Welcome! Enter file path");
             String filePath = scan.next();
             // import the file
