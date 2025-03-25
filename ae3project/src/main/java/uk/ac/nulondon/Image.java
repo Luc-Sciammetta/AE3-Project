@@ -125,9 +125,9 @@ public class Image {
      */
     public void removeSeam(List<Pixel> seam) { //this might work this might not idk there is no way to test it right now
         //TODO: remove the provided seam
-        for (Pixel pixel : seam) {
-            row.right = row.legt;
-        }
+      //  for (Pixel pixel : seam) {
+      //      row.right = row.legt;
+     //   }
         for (int i = 0; i < seam.size(); i++) {
             Pixel current = rows.get(i);
             Pixel seamPixel = seam.get(i);
@@ -144,14 +144,28 @@ public class Image {
                 current = current.right;
             }
         }
+        width--;
     }
 
     public void addSeam(List<Pixel> seam) {
         //TODO: Add the provided seam
-        for (int i = 0; i < seam.size(); i++){
-
+        for (int i = 0; i < seam.size(); i++) {
+            Pixel current = rows.get(i);
+            Pixel seamPixel = seam.get(i);
+            while (current != null) {
+                if (current == seamPixel.right || current == seamPixel.left) {
+                    if(current.left != null){
+                        seamPixel.left = current.left;
+                        current.left.right = seamPixel;
+                    }
+                    seamPixel.right = current;
+                    current.left = seamPixel;
+                    break;
+                }
+                current = current.right;
+            }
         }
-
+        width++;
     }
 
     private List<Pixel> getSeamMaximizing(Function<Pixel, Double> valueGetter) {
