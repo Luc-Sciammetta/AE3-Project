@@ -2,9 +2,7 @@ package uk.ac.nulondon;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 
@@ -170,18 +168,102 @@ public class Image {
 
     private List<Pixel> getSeamMaximizing(Function<Pixel, Double> valueGetter) {
         //TODO: find the seam which maximizes total value extracted from the given pixel
+        //finds the seam with the highest energy and then returns it
+        List<Map<Double, String>> table = new ArrayList<>(); //creates a list of hashmaps that holds each pixels energy values
+        for (int i = 0; i < rows.size(); i++){
+            if (i == 0){ //this is done because we dont want to change the first row
+                Pixel current = rows.get(i);
+                Map<Double, String> map = new HashMap<>();
+                while (current != null){
+                    map.put(valueGetter.apply(current), "");
+                }
+                table.add(map);
+            }
+            table.add(new HashMap<Double, String>());
+        }
+
+        for (int row = 1; row < rows.size(); row++){ //we start at row 1 bc the row 0 does not have any above pixels
+            Pixel current = rows.get(row);
+            int numRights = 0;
+            while (current != null){
+                Pixel above = rows.get(row - 1); //gets the pixel above current
+                for (int i = numRights; i > 0; i--){
+                    above = above.right;
+                }
+
+                if (current.left == null){
+                    //case for only having 2 above pixels (above and right)
+                    double val = valueGetter.apply(current);
+                    double valA = valueGetter.apply(above) + val;
+                    double valR = valueGetter.apply(above.right) + val;
+                    if (valA > valR){
+                        table.get(row).put(valA, "Above");
+                    }else{
+                        table.get(row).put(valR, "AboveRight");
+                    }
+                }else if (current.right == null){
+                    //case for only having 2 above pixels (above and left)
+                    double val = valueGetter.apply(current);
+                    double valL = valueGetter.apply(above.left) + val;
+                    double valA = valueGetter.apply(above) + val;
+                    if (valL > valA){
+                        table.get(row).put(valL, "AboveLeft");
+                    }else{
+                        table.get(row).put(valA, "Above");
+                    }
+                }else{
+                    //we have all above pixels (left, above, right)
+                    double val = valueGetter.apply(current);
+                    double valL = valueGetter.apply(above.left) + val;
+                    double valA = valueGetter.apply(above) + val;
+                    double valR = valueGetter.apply(above.right) + val;
+                    if (valL > valA){
+                        if (valL > valR){
+                            //valL is largest
+                            table.get(row).put(valL, "AboveLeft");
+                        }else{
+                            //valR is largest
+                            table.get(row).put(valR, "AboveRight");
+                        }
+                    }else{
+                        if (valA > valR){
+                            //valA is largest
+                            table.get(row).put(valA, "Above");
+                        }else{
+                            //valR is largest
+                            table.get(row).put(valR, "AboveRight");
+                        }
+                    }
+
+                }
+
+                current = current.right;
+                numRights += 1;
+            }
+        }
+
+
+
+
+
+
+
+
+
+
 //        List<Pixel> seam = new ArrayList<>();
 //        for(int i = 0; i < getWidth(); i++){
 //            rows.
 //        }
-        int max = 0;
-        for(int i = 0; i < rows.size(); i++){
-          int temp  = valueGetter.apply(rows.get(i));
-          if(temp > max){
-              max = temp;
-          }
-        }
-        return max;
+//        int max = 0;
+//        for(int i = 0; i < rows.size(); i++){
+//          int temp  = valueGetter.apply(rows.get(i));
+//          if(temp > max){
+//              max = temp;
+//          }
+//        }
+//        return max;
+        return seam;
     }
 
     public List<Pixel> getGreenestSeam() {
