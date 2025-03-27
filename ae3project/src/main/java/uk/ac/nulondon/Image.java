@@ -82,10 +82,13 @@ public class Image {
         for (int row = 0; row < rows.size(); row++){
             Pixel current = rows.get(row);
             while (current != null){
+                System.out.println(row);
                 if (row == 0 || row >= rows.size() - 1){
+                    System.out.println("dfhjdas");
                     current.energy = current.brightness();
                 }else{
                     Pixel above = rows.get(row - 1);
+                    System.out.println(above);
                     Pixel below = rows.get(row + 1);
                     for (int i = numRights; i > 0; i--){
                         above = above.right;
@@ -169,21 +172,31 @@ public class Image {
     private List<Pixel> getSeamMaximizing(Function<Pixel, Double> valueGetter) {
         //TODO: find the seam which maximizes total value extracted from the given pixel
         //finds the seam with the highest energy and then returns it
-        List<Map<Double, String>> table = new ArrayList<>(); //creates a list of hashmaps that holds each pixels energy values
-        for (int i = 0; i < rows.size(); i++){
-            if (i == 0){ //this is done because we dont want to change the first row
-                Pixel current = rows.get(i);
-                Map<Double, String> map = new HashMap<>();
-                while (current != null){
-                    map.put(valueGetter.apply(current), "");
-                }
-                table.add(map);
+
+        class Cell{
+            Double value;
+            Pixel pastPixel;
+
+            public Cell(Double val, Pixel past){
+                this.value = val;
+                this.pastPixel = past;
             }
-            table.add(new HashMap<Double, String>());
         }
 
+        HashMap<Pixel, Cell> table = new HashMap<>();
+
+
+        // add first row of values to table
+        Pixel current = rows.get(0);
+        while(current != null){
+            Double val = valueGetter.apply(current);
+            table.put(current, new Cell(val, null));
+            current = current.right;
+        }
+
+
         for (int row = 1; row < rows.size(); row++){ //we start at row 1 bc the row 0 does not have any above pixels
-            Pixel current = rows.get(row);
+            current = rows.get(row);
             int numRights = 0;
             while (current != null){
                 Pixel above = rows.get(row - 1); //gets the pixel above current
@@ -197,9 +210,9 @@ public class Image {
                     double valA = valueGetter.apply(above) + val;
                     double valR = valueGetter.apply(above.right) + val;
                     if (valA > valR){
-                        table.get(row).put(valA, "Above");
+                        table.put(current, new Cell(valA, above));
                     }else{
-                        table.get(row).put(valR, "AboveRight");
+                        table.put(current, new Cell(valR, above.right));
                     }
                 }else if (current.right == null){
                     //case for only having 2 above pixels (above and left)
@@ -207,9 +220,9 @@ public class Image {
                     double valL = valueGetter.apply(above.left) + val;
                     double valA = valueGetter.apply(above) + val;
                     if (valL > valA){
-                        table.get(row).put(valL, "AboveLeft");
+                        table.put(current, new Cell(valL, above.left));
                     }else{
-                        table.get(row).put(valA, "Above");
+                        table.put(current, new Cell(valA, above));
                     }
                 }else{
                     //we have all above pixels (left, above, right)
@@ -219,50 +232,46 @@ public class Image {
                     double valR = valueGetter.apply(above.right) + val;
                     if (valL > valA){
                         if (valL > valR){
-                            //valL is largest
-                            table.get(row).put(valL, "AboveLeft");
+                            table.put(current, new Cell(valL, above.left));
                         }else{
-                            //valR is largest
-                            table.get(row).put(valR, "AboveRight");
+                            table.put(current, new Cell(valR, above.right));
                         }
                     }else{
                         if (valA > valR){
-                            //valA is largest
-                            table.get(row).put(valA, "Above");
+                            table.put(current, new Cell(valA, above));
                         }else{
-                            //valR is largest
-                            table.get(row).put(valR, "AboveRight");
+                            table.put(current, new Cell(valR, above.right));
                         }
                     }
 
                 }
-
                 current = current.right;
                 numRights += 1;
             }
         }
 
+        // get the last rows
+        Pixel startingPixel = null;
+        Double bestVal = (double) Integer.MIN_VALUE;
+        Pixel currentPixel2 = rows.get(getHeight() -1);
+        while (currentPixel2 != null){
+            Double hashVal = table.get(currentPixel2).value;
+            if (hashVal > bestVal){
+                startingPixel = currentPixel2;
+                bestVal = hashVal;
+            }
+            currentPixel2 = currentPixel2.right;
+        }
 
+        List<Pixel> seam = new ArrayList<>(); // list to store the path
+        Pixel currentPixel = startingPixel; // last pixel of the image to start
+        while(currentPixel != null && table.containsKey(currentPixel)){
+            seam.add(currentPixel); // add the current pixel to list
+            currentPixel = table.get(currentPixel).pastPixel; // move to the new pixel
+        }
 
+        Collections.reverse(seam);
 
-
-
-
-
-
-
-//        List<Pixel> seam = new ArrayList<>();
-//        for(int i = 0; i < getWidth(); i++){
-//            rows.
-//        }
-//        int max = 0;
-//        for(int i = 0; i < rows.size(); i++){
-//          int temp  = valueGetter.apply(rows.get(i));
-//          if(temp > max){
-//              max = temp;
-//          }
-//        }
-//        return max;
         return seam;
     }
 
@@ -279,7 +288,9 @@ public class Image {
     }
 
     public List<Pixel> getLowestEnergySeam() {
+        System.out.println("BHjkbjksbh");
         calculateEnergy();
+        System.out.println("njfksala");
         /*
         Maximizing negation of energy is the same as minimizing the energy.
          */
