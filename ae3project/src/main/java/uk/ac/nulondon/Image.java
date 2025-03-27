@@ -151,19 +151,27 @@ public class Image {
     public void addSeam(List<Pixel> seam) {
         //TODO: Add the provided seam
         for (int i = 0; i < seam.size(); i++) {
-            Pixel current = rows.get(i);
+            Pixel rowHead = rows.get(i);
             Pixel seamPixel = seam.get(i);
-            while (current != null) {
-                if (current == seamPixel.right || current == seamPixel.left) {
-                    if(current.left != null){
-                        seamPixel.left = current.left;
-                        current.left.right = seamPixel;
-                    }
+            // if seamPixel should be insert at the beginning
+            if(seamPixel.left == null){
+                seamPixel.right = rowHead;
+                rowHead.left = seamPixel;
+                // update the row head to be the new seamPixel
+                rows.set(i, seamPixel);
+            } else{
+                Pixel current = rowHead;
+                while (current != null && current != seamPixel.right) {
+                    current = current.right
+                }
+                // insert seamPixel between left neighbor and current
+                seamPixel.left.right = seamPixel;
+                if(current != null){
                     seamPixel.right = current;
                     current.left = seamPixel;
-                    break;
+                } else{
+                    seamPixel.right = null;
                 }
-                current = current.right;
             }
         }
         width++;
