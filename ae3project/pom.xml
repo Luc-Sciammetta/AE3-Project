@@ -53,7 +53,7 @@
         <artifactId>export-maven-plugin</artifactId>
         <version>1.0</version>
         <configuration>
-          <zipFileName>Name_Surname.zip</zipFileName>
+          <zipFileName>Aryan_Goel_And_Luc_Sciammetta.zip</zipFileName>
         </configuration>
       </plugin>
       <plugin>

@@ -30,6 +30,12 @@ public class ImageEditor {
 
     public void highlightGreenest() throws IOException {
         //TODO: implement via Command pattern
+        try{
+          List<Pixel> greenestSeam  = image.getGreenestSeam();
+          image.highlight(greenestSeam, Red);
+        }catch(Exception e){
+            throw new IOException(e);
+        }
     }
 
     public void removeHighlighted() throws IOException {

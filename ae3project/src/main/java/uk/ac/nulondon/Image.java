@@ -71,6 +71,33 @@ public class Image {
               (below.left.brightness() + (2 * (below.brightness())) + below.right.brightness());
         // find and return the energy
       return Math.sqrt(Math.pow(2, HorizEnergy) + Math.pow(2, VertEnergy));
+/*
+      // class notes
+        if(above == null || below == null || current.left || current.right) {
+            return current.brightness();
+        }
+
+        double a = above.left.brightness();
+        double b = above.brightness();
+        double c = above.right.brightness();
+
+        double d = current.left.brightness();
+        double f = current.right.brightness();
+
+        double g = below.left.brightness();
+        double h = below.brightness();
+        double i = below.right.brightness();
+
+        // find the horizontal energy
+        double HorizEnergy = (a + (2 * (d)) + g) - (c + (2 * (f)) + i);
+        // find the vertical energy
+        double VertEnergy = (a + (2 * (b)) + c) - (g + (2 * (h)) + i);
+        // find and return the energy
+        return Math.sqrt(Math.pow(2, HorizEnergy) + Math.pow(2, VertEnergy));
+
+
+ */
+
     }
 
     /**
@@ -84,11 +111,9 @@ public class Image {
             while (current != null){
                 System.out.println(row);
                 if (row == 0 || row >= rows.size() - 1){
-                    System.out.println("dfhjdas");
                     current.energy = current.brightness();
                 }else{
                     Pixel above = rows.get(row - 1);
-                    System.out.println(above);
                     Pixel below = rows.get(row + 1);
                     for (int i = numRights; i > 0; i--){
                         above = above.right;
@@ -100,6 +125,12 @@ public class Image {
                 numRights += 1;
             }
         }
+        // class notes
+        Pixel above = null;
+        Pixel current = rows.get(0);
+        Pixel below = rows.get(1);
+
+
     }
 
     /**
@@ -125,10 +156,7 @@ public class Image {
      * @param seam
      */
     public void removeSeam(List<Pixel> seam) { //this might work this might not idk there is no way to test it right now
-        //TODO: remove the provided seam
-      //  for (Pixel pixel : seam) {
-      //      row.right = row.legt;
-     //   }
+
         for (int i = 0; i < seam.size(); i++) {
             Pixel current = rows.get(i);
             Pixel seamPixel = seam.get(i);
@@ -146,6 +174,7 @@ public class Image {
             }
         }
         width--;
+
     }
 
     public void addSeam(List<Pixel> seam) {
@@ -281,6 +310,65 @@ public class Image {
         Collections.reverse(seam);
 
         return seam;
+
+
+/*
+        // class notes
+        double[] previousValues = new double[width];
+        double[] currentValues = new double[width];
+
+        List<List<Pixel>> previousSeams = new ArrayList<>();
+        List<List<Pixel>> currentSeams = new ArrayList<>();
+        Pixel currentPixel = rows.getFirst();
+
+        int col = 0;
+        while (currentPixel != null){
+            previousValue[col] = valueGetter.apply(currentPixel);
+            previousSeams.add(List.of(currentPixel));
+            currentPixel = currentPixel.right;
+            col++;
+        }
+
+        // filling up the paths array
+        for(int row = 1; row < height; row++){
+            currentPixel = rows.get(row);
+            col = 0;
+            while (currentPixel != null){
+                double max = previousValues[col];
+                int ref = 0;
+                if(col > 0 && previousValues[col-1] > max){
+                    max = previousValues[col - 1];
+                    ref = col - 1;
+                }
+                if(col < width - 1 && previousValues[col+1] > max){
+                    max = previousValues[col+1];
+                    ref = col + 1;
+                }
+                currentValues[col] = max + valueGetter.apply(currentPixel);
+                currentSeams.add(concat(currentPixel, previousSeams.get(ref)));
+                col++;
+                currentPixel = currentPixel.right;
+            }
+            previousValues = currentValues;
+            currentValues = new double[width];
+            previousSeams = currentSeams;
+            currentSeams = new ArrayList<>();
+        }
+
+        // find the seam with the max value
+        double maxVal = previousValues[0];
+        int maxValIndex = 0;
+
+
+        for(int i = 0 ; i < width ; i++){
+            if(previousValues[i] > maxVal){
+                maxVal = previousValues[i];
+                maxValIndex = i;
+            }
+        }
+        return previousSeams.get(maxValIndex);
+
+ */
     }
 
     public List<Pixel> getGreenestSeam() {
