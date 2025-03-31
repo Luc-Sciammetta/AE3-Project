@@ -62,15 +62,36 @@ public class Image {
      */
     double energy(Pixel above, Pixel current, Pixel below) {
         //TODO: Calculate energy based on neighbours of the current pixel
+        if(above == null || below == null || current.left == null || current.right == null) {
+            return current.brightness();
+        }
+
+        double a = above.left.brightness();
+        double b = above.brightness();
+        double c = above.right.brightness();
+
+        double d = current.left.brightness();
+        double f = current.right.brightness();
+
+        double g = below.left.brightness();
+        double h = below.brightness();
+        double i = below.right.brightness();
 
         // find the horizontal energy
-      double HorizEnergy = (above.left.brightness() + (2 * (current.left.brightness())) + below.left.brightness()) -
-              (above.right.brightness() + (2 * (current.right.brightness())) + below.right.brightness());
+        double HorizEnergy = (a + (2 * (d)) + g) - (c + (2 * (f)) + i);
         // find the vertical energy
-      double VertEnergy = (above.left.brightness() + (2 * (above.brightness())) + above.right.brightness()) -
-              (below.left.brightness() + (2 * (below.brightness())) + below.right.brightness());
+        double VertEnergy = (a + (2 * (b)) + c) - (g + (2 * (h)) + i);
         // find and return the energy
-      return Math.sqrt(Math.pow(2, HorizEnergy) + Math.pow(2, VertEnergy));
+        return Math.sqrt(Math.pow(2, HorizEnergy) + Math.pow(2, VertEnergy));
+
+        // find the horizontal energy
+//      double HorizEnergy = (above.left.brightness() + (2 * (current.left.brightness())) + below.left.brightness()) -
+//              (above.right.brightness() + (2 * (current.right.brightness())) + below.right.brightness());
+//        // find the vertical energy
+//      double VertEnergy = (above.left.brightness() + (2 * (above.brightness())) + above.right.brightness()) -
+//              (below.left.brightness() + (2 * (below.brightness())) + below.right.brightness());
+//        // find and return the energy
+//      return Math.sqrt(Math.pow(2, HorizEnergy) + Math.pow(2, VertEnergy));
     }
 
     /**
@@ -78,19 +99,21 @@ public class Image {
      */
     public void calculateEnergy() {
         //TODO: calculate energy for all the pixels in the image
-        int numRights = 0;
         for (int row = 0; row < rows.size(); row++){
+            int numRights = 0;
+//            System.out.println("Num Rights: "+ numRights);
             Pixel current = rows.get(row);
             while (current != null){
-                System.out.println(row);
+//                System.out.println(row);
                 if (row == 0 || row >= rows.size() - 1){
-                    System.out.println("dfhjdas");
+//                    System.out.println("dfhjdas");
                     current.energy = current.brightness();
                 }else{
                     Pixel above = rows.get(row - 1);
-                    System.out.println(above);
+//                    System.out.println(above);
                     Pixel below = rows.get(row + 1);
-                    for (int i = numRights; i > 0; i--){
+                    for (int i = 0; i < numRights; i++){
+//                        System.out.println("i " + i);
                         above = above.right;
                         below = below.right;
                     }
@@ -114,9 +137,24 @@ public class Image {
         for (int i = 0; i < getWidth(); i++){
             originalSeam.add(seam.get(i));
         }
+
         for (int i = 0; i < seam.size(); i++){ // highlight the seam
-            seam.set(i, new Pixel(color));
-         }
+            Pixel current = rows.get(i);
+            while (current != null){
+                if (current == seam.get(i)){
+                    current = new Pixel(color);
+                    System.out.println(current.color);
+                    System.out.println("yippee!");
+                    break;
+                }
+                current = current.right;
+            }
+        }
+        Pixel current = rows.get(0);
+        while (current != null){
+            System.out.println(current.color);
+            current = current.right;
+        }
         return originalSeam; // return the original seam
     }
 
@@ -162,7 +200,7 @@ public class Image {
             } else{
                 Pixel current = rowHead;
                 while (current != null && current != seamPixel.right) {
-                    current = current.right
+                    current = current.right;
                 }
                 // insert seamPixel between left neighbor and current
                 seamPixel.left.right = seamPixel;
@@ -179,126 +217,95 @@ public class Image {
 
     private List<Pixel> getSeamMaximizing(Function<Pixel, Double> valueGetter) {
         //TODO: find the seam which maximizes total value extracted from the given pixel
-        //finds the seam with the highest energy and then returns it
+        // Arrays to store the cumulative max values of seams for the previous and current row
+        double[] previousValues = new double[width];
+        double[] currentValues = new double[width];
 
-        class Cell{
-            Double value;
-            Pixel pastPixel;
+        // Lists to store the seam paths for the previous and current row
+        List<List<Pixel>> previousSeams = new ArrayList<>();
+        List<List<Pixel>> currentSeams = new ArrayList<>();
 
-            public Cell(Double val, Pixel past){
-                this.value = val;
-                this.pastPixel = past;
-            }
+
+        // Start processing from the first row
+        Pixel currentPixel = rows.getFirst();
+        int col = 0;
+        // Initialize the first row values and corresponding seams
+        while (currentPixel != null){
+            previousValues[col] = valueGetter.apply(currentPixel);
+            previousSeams.add(List.of(currentPixel));
+            currentPixel = currentPixel.right;
+            col++;
         }
 
-        HashMap<Pixel, Cell> table = new HashMap<>();
+        // Process all rows to compute the max-value seams
+        for(int row = 1; row < height; row++){
+            currentPixel = rows.get(row); // get the first pixel of the current row
+            col = 0;
+            while (currentPixel != null){
+                double max = previousValues[col]; // find the above value
+                int ref = col;
 
-
-        // add first row of values to table
-        Pixel current = rows.get(0);
-        while(current != null){
-            Double val = valueGetter.apply(current);
-            table.put(current, new Cell(val, null));
-            current = current.right;
-        }
-
-
-        for (int row = 1; row < rows.size(); row++){ //we start at row 1 bc the row 0 does not have any above pixels
-            current = rows.get(row);
-            int numRights = 0;
-            while (current != null){
-                Pixel above = rows.get(row - 1); //gets the pixel above current
-                for (int i = numRights; i > 0; i--){
-                    above = above.right;
+                // Check the left diagonal pixel
+                if(col > 0 && previousValues[col-1] > max){
+                    max = previousValues[col - 1];
+                    ref = col - 1;
                 }
 
-                if (current.left == null){
-                    //case for only having 2 above pixels (above and right)
-                    double val = valueGetter.apply(current);
-                    double valA = valueGetter.apply(above) + val;
-                    double valR = valueGetter.apply(above.right) + val;
-                    if (valA > valR){
-                        table.put(current, new Cell(valA, above));
-                    }else{
-                        table.put(current, new Cell(valR, above.right));
-                    }
-                }else if (current.right == null){
-                    //case for only having 2 above pixels (above and left)
-                    double val = valueGetter.apply(current);
-                    double valL = valueGetter.apply(above.left) + val;
-                    double valA = valueGetter.apply(above) + val;
-                    if (valL > valA){
-                        table.put(current, new Cell(valL, above.left));
-                    }else{
-                        table.put(current, new Cell(valA, above));
-                    }
-                }else{
-                    //we have all above pixels (left, above, right)
-                    double val = valueGetter.apply(current);
-                    double valL = valueGetter.apply(above.left) + val;
-                    double valA = valueGetter.apply(above) + val;
-                    double valR = valueGetter.apply(above.right) + val;
-                    if (valL > valA){
-                        if (valL > valR){
-                            table.put(current, new Cell(valL, above.left));
-                        }else{
-                            table.put(current, new Cell(valR, above.right));
-                        }
-                    }else{
-                        if (valA > valR){
-                            table.put(current, new Cell(valA, above));
-                        }else{
-                            table.put(current, new Cell(valR, above.right));
-                        }
-                    }
-
+                // Check the right diagonal pixel
+                if(col < width - 1 && previousValues[col+1] > max){
+                    max = previousValues[col+1];
+                    ref = col + 1;
                 }
-                current = current.right;
-                numRights += 1;
+
+                // Update the current pixel's value with the max sum path so far
+                currentValues[col] = max + valueGetter.apply(currentPixel);
+
+                // Store the best seam path leading to this pixel
+                currentSeams.add(concat(currentPixel, previousSeams.get(ref)));
+
+                // Move to the next pixel in the row
+                col++;
+                currentPixel = currentPixel.right;
+            }
+
+            // Prepare for the next row by updating references
+            previousValues = currentValues;
+            currentValues = new double[width];
+            previousSeams = currentSeams;
+            currentSeams = new ArrayList<>();
+        }
+
+        // find the seam with the max value
+        double maxVal = previousValues[0];
+        int maxValIndex = 0;
+
+
+        for(int i = 0 ; i < width ; i++){
+            if(previousValues[i] > maxVal){
+                maxVal = previousValues[i];
+                maxValIndex = i;
             }
         }
 
-        // get the last rows
-        Pixel startingPixel = null;
-        Double bestVal = (double) Integer.MIN_VALUE;
-        Pixel currentPixel2 = rows.get(getHeight() -1);
-        while (currentPixel2 != null){
-            Double hashVal = table.get(currentPixel2).value;
-            if (hashVal > bestVal){
-                startingPixel = currentPixel2;
-                bestVal = hashVal;
-            }
-            currentPixel2 = currentPixel2.right;
-        }
-
-        List<Pixel> seam = new ArrayList<>(); // list to store the path
-        Pixel currentPixel = startingPixel; // last pixel of the image to start
-        while(currentPixel != null && table.containsKey(currentPixel)){
-            seam.add(currentPixel); // add the current pixel to list
-            currentPixel = table.get(currentPixel).pastPixel; // move to the new pixel
-        }
-
-        Collections.reverse(seam);
-
-        return seam;
+        // Return the seam with the highest total value
+        return previousSeams.get(maxValIndex);
     }
 
     public List<Pixel> getGreenestSeam() {
         return getSeamMaximizing(Pixel::getGreen);
-        /*Or, since we haven't lectured on lambda syntax in Java, this can be
-        return getSeamMaximizing(new Function<Pixel, Double>() {
-            @Override
-            public Double apply(Pixel pixel) {
-                return pixel.getGreen();
-            }
-        });*/
+        //Or, since we haven't lectured on lambda syntax in Java, this can be
+//        return getSeamMaximizing(new Function<Pixel, Double>() {
+//            @Override
+//            public Double apply(Pixel pixel) {
+//                return pixel.getGreen();
+//            }
+//        });
+
 
     }
 
     public List<Pixel> getLowestEnergySeam() {
-        System.out.println("BHjkbjksbh");
         calculateEnergy();
-        System.out.println("njfksala");
         /*
         Maximizing negation of energy is the same as minimizing the energy.
          */
