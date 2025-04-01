@@ -57,42 +57,73 @@ public class ImageEditor {
     }
 
     public void highlightGreenest() throws IOException {
-        //TODO: implement via Command pattern
         List<Pixel> seam = image.getGreenestSeam(); //gets the seam
         Command highlight = new HighlightGreenest(seam); //creates the command
         remote.executeCommand(highlight); //puts the command via the remote to actually run the command
     }
 
     public void removeHighlighted() throws IOException {
-        //TODO: implement via Command pattern
+        Command removeHighlight = new RemoveHighlighted(highlightedSeam);
+        remote.executeCommand(removeHighlight);
     }
 
     public void undo() throws IOException {
-        //TODO: implement via Command pattern
+        remote.undo();
     }
 
     public void highlightLowestEnergySeam() throws IOException {
-        //TODO: implement via Command pattern
+        List<Pixel> seam = image.getLowestEnergySeam();
+        Command lowestEnergyHighlight = new HighlightLowestEnergy(seam);
+        remote.executeCommand(lowestEnergyHighlight);
     }
-
-    //TODO: implement Command class or interface and its subtypes
 
 
     class HighlightGreenest implements Command{
-        List<Pixel> seam;
+        private List<Pixel> seam;
         public HighlightGreenest(List<Pixel> seam){
             this.seam = seam;
         }
         @Override
         public void execute(){
-            //i think this is where we do the code to actually highlight in the image
-            List<Pixel> originalSeam = image.higlightSeam(seam, Color.GREEN);
-            seam = originalSeam;
+            highlightedSeam = image.higlightSeam(seam, Color.GREEN);
+        }
+
+        @Override
+        public void undo(){ //TODO
+
+        }
+    }
+
+
+    class HighlightLowestEnergy implements Command{
+        private List<Pixel> seam;
+        public HighlightLowestEnergy(List<Pixel> seam){
+            this.seam = seam;
+        }
+        @Override
+        public void execute(){
+            highlightedSeam = image.higlightSeam(seam, Color.RED);
+        }
+
+        @Override
+        public void undo(){ //TODO
+
+        }
+    }
+
+    class RemoveHighlighted implements Command{
+        private List<Pixel> seam;
+        public RemoveHighlighted(List<Pixel> seam){
+            this.seam = seam;
+        }
+        @Override
+        public void execute(){
+            image.removeSeam(seam);
         }
 
         @Override
         public void undo(){
-
+            image.addSeam(seam);
         }
     }
 

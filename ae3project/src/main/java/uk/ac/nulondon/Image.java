@@ -101,19 +101,14 @@ public class Image {
         //TODO: calculate energy for all the pixels in the image
         for (int row = 0; row < rows.size(); row++){
             int numRights = 0;
-//            System.out.println("Num Rights: "+ numRights);
             Pixel current = rows.get(row);
             while (current != null){
-//                System.out.println(row);
-                if (row == 0 || row >= rows.size() - 1){
-//                    System.out.println("dfhjdas");
+                if (row == 0 || row >= rows.size() - 1 || numRights == 0 || current.right == null){ //top, bottom, or sides of the image
                     current.energy = current.brightness();
                 }else{
                     Pixel above = rows.get(row - 1);
-//                    System.out.println(above);
                     Pixel below = rows.get(row + 1);
                     for (int i = 0; i < numRights; i++){
-//                        System.out.println("i " + i);
                         above = above.right;
                         below = below.right;
                     }
@@ -133,89 +128,79 @@ public class Image {
      */
     public List<Pixel> higlightSeam(List<Pixel> seam, Color color) {
         //TODO: highlight the seam, return previous values
-        List<Pixel> originalSeam =  new ArrayList<>(); //deep copy here
-        for (int i = 0; i < getWidth(); i++){
-            originalSeam.add(seam.get(i));
+        List<Pixel> originalSeam = new ArrayList<>(); //deep copy here
+        for (Pixel pixel : seam) {
+            originalSeam.add(new Pixel(pixel.color));
         }
 
-        for (int i = 0; i < seam.size(); i++){ // highlight the seam
-            Pixel current = rows.get(i);
-            while (current != null){
-                if (current == seam.get(i)){
-                    current = new Pixel(color);
-                    System.out.println(current.color);
-                    System.out.println("yippee!");
-                    break;
-                }
-                current = current.right;
+        int row = height - 1;
+        for (Pixel pixel : seam) {
+            Pixel newPixel = new Pixel(color);
+            if (pixel.left != null) {
+                pixel.left.right = newPixel;
+                newPixel.left = pixel.left;
+            } else {
+                // left most pixel
+                rows.set(row, newPixel);
             }
+            if (pixel.right != null) {
+                pixel.right.left = newPixel;
+                newPixel.right = pixel.right;
+            }
+            row--;
         }
-        Pixel current = rows.get(0);
-        while (current != null){
-            System.out.println(current.color);
-            current = current.right;
-        }
-        return originalSeam; // return the original seam
+        return originalSeam;
     }
 
     /**
      *
      * @param seam
      */
-    public void removeSeam(List<Pixel> seam) { //this might work this might not idk there is no way to test it right now
+    public void removeSeam(List<Pixel> seam) {
         //TODO: remove the provided seam
-      //  for (Pixel pixel : seam) {
-      //      row.right = row.legt;
-     //   }
-        for (int i = 0; i < seam.size(); i++) {
-            Pixel current = rows.get(i);
-            Pixel seamPixel = seam.get(i);
-            while (current != null) {
-                if (current == seamPixel) {
-                    if(current.left != null){
-                        current.left.right = current.right;
-                    }
-                    if(current.right != null){
-                        current.right.left = current.left;
-                    }
-                    break;
-                }
-                current = current.right;
-            }
-        }
         width--;
+        int row = height - 1;
+        for(Pixel pixel : seam){
+            if(pixel.left != null){
+                pixel.left.right = pixel.right; // jump the pixel from the left
+            } else {
+                // left most pixel
+                rows.set(row, pixel.right);
+            }
+            if(pixel.right != null){
+                pixel.right.left = pixel.left; // jump the pixel from the right
+            }
+            row--;
+        }
     }
 
     public void addSeam(List<Pixel> seam) {
         //TODO: Add the provided seam
-        for (int i = 0; i < seam.size(); i++) {
-            Pixel rowHead = rows.get(i);
-            Pixel seamPixel = seam.get(i);
-            // if seamPixel should be insert at the beginning
+        width++;
+
+        for (int row = 0; row < seam.size(); row++) {
+            Pixel seamPixel = seam.get(row);
+            Pixel rowHead = rows.get(row);
+
+            // if seamPixel should be inserted at the beginning
             if(seamPixel.left == null){
                 seamPixel.right = rowHead;
-                rowHead.left = seamPixel;
-                // update the row head to be the new seamPixel
-                rows.set(i, seamPixel);
+                if(rowHead != null) rowHead.left = seamPixel;
+                rows.set(row, seamPixel);
             } else{
-                Pixel current = rowHead;
-                while (current != null && current != seamPixel.right) {
-                    current = current.right;
-                }
-                // insert seamPixel between left neighbor and current
+                Pixel current = seamPixel.left.right;
+
+                // Insert seamPixel in between left and right
                 seamPixel.left.right = seamPixel;
-                if(current != null){
-                    seamPixel.right = current;
-                    current.left = seamPixel;
-                } else{
-                    seamPixel.right = null;
-                }
+                seamPixel.right = current;
+                if (current != null) current.left = seamPixel;
             }
         }
-        width++;
     }
 
     private List<Pixel> getSeamMaximizing(Function<Pixel, Double> valueGetter) {
+        //finds the seam with the highest energy and then returns it
+
         //TODO: find the seam which maximizes total value extracted from the given pixel
         // Arrays to store the cumulative max values of seams for the previous and current row
         double[] previousValues = new double[width];
@@ -291,6 +276,21 @@ public class Image {
         return previousSeams.get(maxValIndex);
     }
 
+    /**
+     *
+     * @param currentPixel
+     * @param previousSeams
+     * @return
+     */
+    public List<Pixel> concat(Pixel currentPixel, List<Pixel> previousSeams){
+        // create a new Seams
+        List<Pixel> newSeams = new ArrayList<>();
+        // add current pixel to the front
+        newSeams.add(currentPixel);
+        // add all values of the previous seam
+        newSeams.addAll(previousSeams);
+        return newSeams;
+    }
     public List<Pixel> getGreenestSeam() {
         return getSeamMaximizing(Pixel::getGreen);
         //Or, since we haven't lectured on lambda syntax in Java, this can be
