@@ -17,9 +17,9 @@ public class Pixel {
     public Pixel(Color color) {
         this.color = color;
     }
+
     // method to find the brightness of a pixel
     public double brightness() {
-        //TODO: implement brightness calculation
         double red = color.getRed();
         double green = getGreen();
         double blue = color.getBlue();

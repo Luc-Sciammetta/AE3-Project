@@ -57,24 +57,47 @@ public class ImageEditor {
     }
 
     public void highlightGreenest() throws IOException {
-        List<Pixel> seam = image.getGreenestSeam(); //gets the seam
-        Command highlight = new HighlightGreenest(seam); //creates the command
-        remote.executeCommand(highlight); //puts the command via the remote to actually run the command
+        System.out.println("6");
+        try{
+            System.out.println("7");
+            List<Pixel> seam = image.getGreenestSeam(); //gets the seam
+            System.out.println("8");
+            Command highlight = new HighlightGreenest(seam); //creates the command
+            System.out.println("9");
+            remote.executeCommand(highlight); //puts the command via the remote to actually run the command
+            System.out.println("10");
+        }  catch (Exception e) {
+            throw new IOException(e);
+        }
+
     }
 
     public void removeHighlighted() throws IOException {
-        Command removeHighlight = new RemoveHighlighted(highlightedSeam);
-        remote.executeCommand(removeHighlight);
+        try {
+            System.out.println("HighlightSeam: " + highlightedSeam);
+            Command removeHighlight = new RemoveHighlighted(highlightedSeam);
+            remote.executeCommand(removeHighlight);
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
     }
 
     public void undo() throws IOException {
-        remote.undo();
+        try {
+            remote.undo();
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
     }
 
     public void highlightLowestEnergySeam() throws IOException {
-        List<Pixel> seam = image.getLowestEnergySeam();
-        Command lowestEnergyHighlight = new HighlightLowestEnergy(seam);
-        remote.executeCommand(lowestEnergyHighlight);
+        try {
+            List<Pixel> seam = image.getLowestEnergySeam();
+            Command lowestEnergyHighlight = new HighlightLowestEnergy(seam);
+            remote.executeCommand(lowestEnergyHighlight);
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
     }
 
 
@@ -89,8 +112,8 @@ public class ImageEditor {
         }
 
         @Override
-        public void undo(){ //TODO
-
+        public void undo(){
+            image.addSeam(highlightedSeam); //this is either highlightedSeam or seam
         }
     }
 
@@ -106,8 +129,8 @@ public class ImageEditor {
         }
 
         @Override
-        public void undo(){ //TODO
-
+        public void undo(){
+            image.addSeam(highlightedSeam); //this is either highlightedSeam or seam
         }
     }
 
@@ -125,6 +148,10 @@ public class ImageEditor {
         public void undo(){
             image.addSeam(seam);
         }
+    }
+
+    public List<Pixel> getRows(){
+        return image.rows;
     }
 
 }

@@ -40,11 +40,28 @@ public class Main {
 
     private void greenest(Scanner scan) throws IOException {
         // highlight and export intermediate image
+        System.out.println("1");
+        System.out.println("ROOOOOOWS: " + editor.getRows());
+        for (Pixel p: editor.getRows()){
+            System.out.println(p);
+        }
+        System.out.println();
         editor.highlightGreenest();
+        System.out.println("2");
         // ask for confirmation and try to execute
         System.out.println("Remove the greenest seam. Continue? (Y/N)");
+        System.out.println("3");
         if ("y".equalsIgnoreCase(scan.next())) {
+            System.out.println("4");
+            editor.save("ae3project/newImg.png");
             editor.removeHighlighted();
+
+            System.out.println("ROOOOOOWS2 : " + editor.getRows());
+            for (Pixel p: editor.getRows()){
+                System.out.println(p);
+            }
+            System.out.println();
+            System.out.println("5");
         } else {
             editor.undo();
         }
@@ -75,7 +92,7 @@ public class Main {
                 }
             }
             // After the user exits, export the final image
-            editor.save("target/newImg.png");
+            editor.save("newImg.png");
         }
     }
 

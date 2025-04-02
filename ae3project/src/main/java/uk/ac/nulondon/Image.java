@@ -7,7 +7,7 @@ import java.util.function.Function;
 
 
 public class Image {
-    private final List<Pixel> rows;
+    public final List<Pixel> rows;
 
     private int width;
     private int height;
@@ -61,7 +61,6 @@ public class Image {
      * @return the calculate energy double
      */
     double energy(Pixel above, Pixel current, Pixel below) {
-        //TODO: Calculate energy based on neighbours of the current pixel
         if(above == null || below == null || current.left == null || current.right == null) {
             return current.brightness();
         }
@@ -83,22 +82,12 @@ public class Image {
         double VertEnergy = (a + (2 * (b)) + c) - (g + (2 * (h)) + i);
         // find and return the energy
         return Math.sqrt(Math.pow(2, HorizEnergy) + Math.pow(2, VertEnergy));
-
-        // find the horizontal energy
-//      double HorizEnergy = (above.left.brightness() + (2 * (current.left.brightness())) + below.left.brightness()) -
-//              (above.right.brightness() + (2 * (current.right.brightness())) + below.right.brightness());
-//        // find the vertical energy
-//      double VertEnergy = (above.left.brightness() + (2 * (above.brightness())) + above.right.brightness()) -
-//              (below.left.brightness() + (2 * (below.brightness())) + below.right.brightness());
-//        // find and return the energy
-//      return Math.sqrt(Math.pow(2, HorizEnergy) + Math.pow(2, VertEnergy));
     }
 
     /**
      * calculates the energy property of each pixel
      */
     public void calculateEnergy() {
-        //TODO: calculate energy for all the pixels in the image
         for (int row = 0; row < rows.size(); row++){
             int numRights = 0;
             Pixel current = rows.get(row);
@@ -122,12 +111,11 @@ public class Image {
 
     /**
      *  Highlights a seam in the image
-     * @param seam given seam to hightlights
+     * @param seam given seam to highlights
      * @param color given color to highlight the seam
      * @return the original seam
      */
     public List<Pixel> higlightSeam(List<Pixel> seam, Color color) {
-        //TODO: highlight the seam, return previous values
         List<Pixel> originalSeam = new ArrayList<>(); //deep copy here
         for (Pixel pixel : seam) {
             originalSeam.add(new Pixel(pixel.color));
@@ -157,7 +145,6 @@ public class Image {
      * @param seam
      */
     public void removeSeam(List<Pixel> seam) {
-        //TODO: remove the provided seam
         width--;
         int row = height - 1;
         for(Pixel pixel : seam){
@@ -175,7 +162,6 @@ public class Image {
     }
 
     public void addSeam(List<Pixel> seam) {
-        //TODO: Add the provided seam
         width++;
 
         for (int row = 0; row < seam.size(); row++) {
@@ -199,8 +185,6 @@ public class Image {
     }
 
     private List<Pixel> getSeamMaximizing(Function<Pixel, Double> valueGetter) {
-        //finds the seam with the highest energy and then returns it
-
         //TODO: find the seam which maximizes total value extracted from the given pixel
         // Arrays to store the cumulative max values of seams for the previous and current row
         double[] previousValues = new double[width];
@@ -212,6 +196,12 @@ public class Image {
 
 
         // Start processing from the first row
+        System.out.println("nfjkslaca");
+        for (Pixel p: rows){
+            System.out.println(p);
+        }
+
+
         Pixel currentPixel = rows.getFirst();
         int col = 0;
         // Initialize the first row values and corresponding seams
@@ -292,6 +282,7 @@ public class Image {
         return newSeams;
     }
     public List<Pixel> getGreenestSeam() {
+        System.out.println("11");
         return getSeamMaximizing(Pixel::getGreen);
         //Or, since we haven't lectured on lambda syntax in Java, this can be
 //        return getSeamMaximizing(new Function<Pixel, Double>() {
